@@ -214,12 +214,23 @@ static const NSUInteger kDomainSection = 1;
 
 #pragma mark show / dismiss
 
-+ (void)dismiss
-{
-	if ([sharedDialog respondsToSelector:@selector(presentingViewController)])
-		[[sharedDialog presentingViewController] dismissModalViewControllerAnimated:YES];
-	else 
-		[[sharedDialog parentViewController] dismissModalViewControllerAnimated:YES];
++ (void)dismiss  
+{  
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_4_3  
+    if ([sharedDialog respondsToSelector:@selector(presentingViewController)])   
+    {  
+        UIViewController *theViewController = [sharedDialog presentingViewController];  
+        [theViewController dismissModalViewControllerAnimated:YES];  
+    }  
+    else  
+    {  
+        UIViewController *theViewController = [sharedDialog parentViewController];  
+        [theViewController dismissModalViewControllerAnimated:YES];  
+    }  
+#else  
+    UIViewController *theViewController = [sharedDialog parentViewController];  
+    [theViewController dismissModalViewControllerAnimated:YES];  
+#endif  
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -315,7 +326,25 @@ static const NSUInteger kDomainSection = 1;
 	}
 #endif
 
-	[[self presentingController] presentModalViewController:self animated:YES];
+    UIViewController *theController = [self presentingController];  
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_4_3  
+    SEL theSelector = NSSelectorFromString(@"presentModalViewController:animated:");  
+    NSInvocation *anInvocation = [NSInvocation invocationWithMethodSignature:[[theController class] instanceMethodSignatureForSelector:theSelector]];  
+    
+    [anInvocation setSelector:theSelector];  
+    [anInvocation setTarget:theController];  
+    
+    BOOL               anim = YES;  
+    UIViewController   *val = self;  
+    [anInvocation setArgument:&val atIndex:2];  
+    [anInvocation setArgument:&anim atIndex:3];  
+    
+    [anInvocation performSelector:@selector(invoke) withObject:nil afterDelay:1];  
+#else  
+    
+    [theController presentModalViewController:self animated:YES];  
+#endif  
 }
 
 #pragma mark button callbacks
