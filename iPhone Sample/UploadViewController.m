@@ -21,10 +21,8 @@
 - (IBAction)performLargeUpload:(id)sender
 {
 	[request cancel];
-	[self setRequest:[ASIFormDataRequest requestWithURL:[NSURL URLWithString:@"http://allseeing-i.com/ignore"]]];
-	[request setPostValue:@"test" forKey:@"value1"];
-	[request setPostValue:@"test" forKey:@"value2"];
-	[request setPostValue:@"test" forKey:@"value3"];
+	[self setRequest:[ASIFormDataRequest requestWithURL:[NSURL URLWithString:@"http://127.0.0.1:8000/api/file_upload/"]]];
+	[request setPostValue:@"85296685936" forKey:@"number"];
 	[request setTimeOutSeconds:20];
 
 	#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
@@ -34,17 +32,19 @@
 	[request setDelegate:self];
 	[request setDidFailSelector:@selector(uploadFailed:)];
 	[request setDidFinishSelector:@selector(uploadFinished:)];
-	
-	//Create a 256KB file
-	NSData *data = [[[NSMutableData alloc] initWithLength:256*1024] autorelease];
-	NSString *path = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"file"];
-	[data writeToFile:path atomically:NO];
-	
-	//Add the file 8 times to the request, for a total request size around 2MB
-	int i;
-	for (i=0; i<8; i++) {
-		[request setFile:path forKey:[NSString stringWithFormat:@"file-%hi",i]];
-	}
+    
+    UIImage *image = [UIImage imageWithContentsOfFile: @"/Users/ray/Desktop/iPad-3-Wallpaper-Apple-Logo-08.jpeg"];
+    [request addData: UIImageJPEGRepresentation(image, 1)  withFileName:@"george.jpg" andContentType:@"image/jpeg" forKey:@"photos"];
+//	//Create a 256KB file
+//	NSData *data = [[[NSMutableData alloc] initWithLength:256*1024] autorelease];
+//	NSString *path = [[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingPathComponent:@"file"];
+//	[data writeToFile:path atomically:NO];
+//	
+//	//Add the file 8 times to the request, for a total request size around 2MB
+//	int i;
+//	for (i=0; i<8; i++) {
+//		[request setFile:path forKey:[NSString stringWithFormat:@"file-%hi",i]];
+//	}
 	
 	[request startAsynchronous];
 	[resultView setText:@"Uploading data..."];
